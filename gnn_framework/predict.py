@@ -91,7 +91,7 @@ if __name__ == "__main__":
     # parser
     parser = argparse.ArgumentParser()
     parser.add_argument('--trained_model_dir', '-d', help="path to the trained model directory", type=str, 
-                        default=r'D:\Playground\windfarm-gnn\runs\GEN_4_layers_0.0_dropout_1e-3_lr_150_epochs_256_latent_dim_06_11_12_08')
+                        default=r'D:\Playground\windfarm-gnn\windfarm-gnn-pretrained\pretrained_GEN_model')
     parser.add_argument('--test_dataset_path', '-t', help="path to the testing dataset", type=str, 
                         default=r'D:\Playground\windfarm-gnn\generated_graphs\validation_set')
     parser.add_argument('--model_version', '-v', help="version of the model to use for prediction", type=str, default='best')

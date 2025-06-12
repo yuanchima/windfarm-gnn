@@ -1,10 +1,13 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import torch
 from torch.utils.data import random_split
 import torch.optim as optim
 from torch_geometric.loader import DataLoader
-from models import WindFarmGNN
-from .minlora import add_lora, get_lora_state_dict, get_lora_params
-from data import GraphFarmsDataset, compute_dataset_stats
+from gnn_framework.models import WindFarmGNN
+from gnn_framework.finetuning.minlora import add_lora, get_lora_state_dict, get_lora_params
+from gnn_framework.data import GraphFarmsDataset, compute_dataset_stats
 from box import Box
 import yaml
 import os
@@ -213,6 +216,7 @@ def save_model(model, run_dir, savename, ft_method, pretrained_state):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ft_config', '-c', help="path to the finetune config file", type=str, default='ft_config.yml')
+    config_path = os.path.join(os.path.dirname(__file__), 'ft_config.yml')
+    parser.add_argument('--ft_config', '-c', help="path to the finetune config file", type=str, default=config_path)
     
     finetune(parser.parse_args().ft_config)
