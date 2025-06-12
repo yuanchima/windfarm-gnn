@@ -5,3 +5,11 @@ graph_farms/generated_graphs/
 gnn_framework/runs/
 
 *.zip
+
+.venv
+
+Simulated_fatigue_load_dataset
+61.0
+uv.lock
+runs
+# generated_graphs

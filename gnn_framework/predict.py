@@ -2,7 +2,7 @@ import argparse
 from box import Box
 from models import WindFarmGNN
 from finetuning.minlora import add_lora
-from dataset import GraphFarmsDataset
+from data import GraphFarmsDataset
 import os
 import yaml
 from torch_geometric.loader import DataLoader
@@ -70,7 +70,7 @@ def predict(trained_model_dir:str, test_dataset_path:str, model_version='best', 
             data = data.to(device)
 
             # compute the batch validation loss
-            data, latent_x = model(data, denorm=True, return_latent=True)
+            data, latent_x = model(data, denorm_output=True, return_latent=True)
             lxs += [latent_x.cpu().numpy()]
             
             # gather ground truth and predictions
@@ -90,10 +90,16 @@ def predict(trained_model_dir:str, test_dataset_path:str, model_version='best', 
 if __name__ == "__main__":
     # parser
     parser = argparse.ArgumentParser()
-    parser.add_argument('--trained_model_dir', '-d', help="path to the trained model directory", type=str, required=True)
-    parser.add_argument('--test_dataset_path', '-t', help="path to the testing dataset", type=str, required=True)
+    parser.add_argument('--trained_model_dir', '-d', help="path to the trained model directory", type=str, 
+                        default=r'D:\Playground\windfarm-gnn\runs\GEN_4_layers_0.0_dropout_1e-3_lr_150_epochs_256_latent_dim_06_11_12_08')
+    parser.add_argument('--test_dataset_path', '-t', help="path to the testing dataset", type=str, 
+                        default=r'D:\Playground\windfarm-gnn\generated_graphs\validation_set')
     parser.add_argument('--model_version', '-v', help="version of the model to use for prediction", type=str, default='best')
     parser.add_argument('--sample_index', '-s', help="index of the sample to predict, if not passed all test samples are predicted", type=int, default=None)
     
     args = parser.parse_args()
-    predict(args.trained_model_dir, args.test_dataset_path, args.model_version, args.sample_index)
+    y, y_pred, rmse, maxe, mape, lxs = predict(args.trained_model_dir, args.test_dataset_path, args.model_version, True)
+
+    print('rmse: ', rmse)
+    print('maxe: ', maxe)
+    print('mape: ', mape)

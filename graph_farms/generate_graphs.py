@@ -1,7 +1,7 @@
 from layout_gen import LayoutGenerator
 from inflow_gen import InflowGenerator
 from pywake_sim import simulate_farm
-from utils import to_graph
+from utils import to_graph, compute_edge_attr
 import yaml
 import numpy as np
 import argparse
@@ -86,7 +86,10 @@ def process_one_layout(layout, inflow_df, layout_id, dset_path, node_scada_featu
                                 t = torch.cat((t, torch.Tensor(np.array([loads.sel(sensor=s).DEL.values[:, i]]))))
 
                         g.y = t.T
-                        g.globals = torch.Tensor(np.array([power.ws.values[i], power.wd.values[i], power.TI.values[i]]))
+                        random_noise = np.random.normal(loc=0, scale=1e-3, size=1)  # 生成小的随机噪声，避免归一化问题
+                        g.globals = torch.Tensor(np.array([power.ws.values[i], power.wd.values[i], power.TI.values+random_noise[0]]))
+
+                        g.edge_attr = compute_edge_attr(g.pos, g.edge_index, g.globals[1].item())
 
                         # if there are no nan values then save graph
                         if not torch.isnan(g.y).any() and not torch.isnan(g.globals).any():
@@ -160,14 +163,14 @@ def generate_graphs(config_path:str, num_layouts:int, num_inflows:int, dset_path
 if __name__ == "__main__":
     # set the args of the script
     parser = argparse.ArgumentParser()
-    parser.add_argument('-config', '-c', help="path to the config file", type=str, required=False, default='config.yml')
-    parser.add_argument('-num_layouts', '-nl', help="number of layouts to generate", type=int, required=False, default=100)
+    parser.add_argument('-config', '-c', help="path to the config file", type=str, required=False, default='./graph_farms/config.yml')
+    parser.add_argument('-num_layouts', '-nl', help="number of layouts to generate", type=int, required=False, default=10)
     parser.add_argument('-num_inflows', '-ni', help="number of inflows to generate per layout", type=int, required=False, default=10)
-    parser.add_argument('-dset_path', '-d', help="path for the dataset to generate", type=str, required=False, default='./generated_graphs/train_set/')
+    parser.add_argument('-dset_path', '-d', help="path for the dataset to generate", type=str, required=False, default='./generated_graphs/validation_set/')
     parser.add_argument('-node_scada_features', '-f', help="if input node features should be used", action='store_true')
-    parser.add_argument('-threads', '-t', help="the number of threads to use", type=int, default=4)
-    parser.add_argument('-connectivity', '-co', help="the kind of connectivity to use: either delaunay, knn, radial, fully_connected, raycasting, all", type=str, default='delaunay')
-    parser.add_argument('-loads_model', '-l', help="the kind of load model to use: either OneWT, TwoWT or both", type=str, default='TwoWT')
+    parser.add_argument('-threads', '-t', help="the number of threads to use", type=int, default=8)
+    parser.add_argument('-connectivity', '-co', help="the kind of connectivity to use: either delaunay, knn, radial, fully_connected, raycasting, all", type=str, default='all')
+    parser.add_argument('-loads_model', '-l', help="the kind of load model to use: either OneWT, TwoWT or both", type=str, default='both')
 
     args = parser.parse_args()
 

@@ -19,12 +19,25 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 # we redefine here the OneWT surrogate, as we need to override the TI input
 # in the original PyWake IEA34_130_1WT_Surrogate implementation TI_eff is set, which does not override the TI input
+# class IEA34_130_1WT_Surrogate(IEA34_130_Base):
+
+#     def __init__(self):
+#         surrogate_path = Path(example_data_path) / 'iea34_130rwt' / 'one_turbine'
+#         loadFunction = ThreeRegionLoadSurrogates(
+#             [[TensorflowSurrogate(surrogate_path / s, n) for n in self.set_names] for s in self.load_sensors],
+#             input_parser=lambda ws, TI=.1, Alpha=0: [ws, TI, Alpha])
+#         powerCtFunction = IEA34_130_PowerCtSurrogate(
+#             surrogate_path,
+#             input_parser=lambda ws, TI, Alpha=0: [ws, TI, Alpha])
+#         IEA34_130_Base.__init__(self, powerCtFunction=powerCtFunction, loadFunction=loadFunction)
+
 class IEA34_130_1WT_Surrogate(IEA34_130_Base):
 
     def __init__(self):
         surrogate_path = Path(example_data_path) / 'iea34_130rwt' / 'one_turbine'
         loadFunction = ThreeRegionLoadSurrogates(
-            [[TensorflowSurrogate(surrogate_path / s, n) for n in self.set_names] for s in self.load_sensors],
+            [[TensorflowSurrogate.from_dtu_json(surrogate_path / s, n)
+              for n in self.set_names] for s in self.load_sensors],
             input_parser=lambda ws, TI=.1, Alpha=0: [ws, TI, Alpha])
         powerCtFunction = IEA34_130_PowerCtSurrogate(
             surrogate_path,
@@ -66,7 +79,7 @@ def simulate_farm(inflow_df: pd.DataFrame, positions: np.ndarray, loads_method:s
                             wd=wd,  # Wind direction 'time series'
                             ws=ws,  # Wind speed 'time series'
                             TI=ti/100,  # Turbulence intensity 'time series'
-                            yaw=yaw,  # yaw angles 'time series'
+                            # yaw=yaw,  # yaw angles 'time series'
                             Alpha=alpha, # shear exponent 'time series'
                             time=True,  # time stamps
                             )

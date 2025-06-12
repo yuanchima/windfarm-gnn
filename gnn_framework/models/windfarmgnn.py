@@ -28,7 +28,7 @@ class WindFarmGNN(nn.Module):
         self.trainset_stats = None
         self.norm_type = kwargs['norm_type']
 
-    def forward(self, data, denorm_output=False):
+    def forward(self, data, denorm_output=False, return_latent=False):
         assert all(hasattr(data, attr) for attr in ['edge_index', 'edge_attr', 'batch'])
         # first normalize the input data
         data = self.normalize_input(data)
@@ -45,6 +45,10 @@ class WindFarmGNN(nn.Module):
         # denormalize the output for final prediction if needed
         if denorm_output:
             data = self.denormalize_output(data)
+        
+        if return_latent:
+            # return the data with the latent node features
+            return data, data.x
         
         return data
     

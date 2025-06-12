@@ -152,5 +152,5 @@ def train(config_path: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--yaml_config', '-c', help="path to the yaml config file", type=str,
-                        required=False, default='config.yml')
+                        required=False, default='gnn_framework/config.yml')
     train(config_path=parser.parse_args().yaml_config)

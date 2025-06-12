@@ -139,6 +139,28 @@ def raycasting_connectivity(positions, wd, turbine_diameter, num_rays: int = 100
     
     return edge_index
 
+def compute_edge_attr(pos: torch.Tensor,
+                      edge_index: torch.Tensor,
+                      wind_dir_deg: float) -> torch.Tensor:
+    """返回 [E,3] 的 (d, α, β)。角度保留度制，可在外部再归一化。"""
+    src, dst = edge_index
+    vec = pos[dst] - pos[src]                     # (E,2)
+    dx, dy = vec[:,0], vec[:,1]
+
+    distance = np.hypot(dx, dy)
+
+    # α: 相对北向(0°)的顺时针角度；arctan2 以 x 轴(东)为 0°, 逆时针为正
+    # 因此先转成数学坐标，再转成顺时针、以北为 0° 的表述
+    alpha = (450.0 - np.degrees(np.arctan2(dy, dx))) % 360.0
+
+    beta = (alpha - wind_dir_deg) % 360.0
+
+    edge_attr = torch.as_tensor(
+        np.vstack([distance, alpha, beta]).T,
+        dtype=torch.float32
+    )
+    return edge_attr
+
 def to_graph(points: np.array, connectivity: str, min_dist=None, constant=30, add_edge='polar', wd=None, turbine_diameter=130, ray_cast_angle=90):
     '''
     Converts np.array to torch_geometric.data.data.Data object with the specified connectivity and edge feature type.
@@ -191,6 +213,7 @@ def to_graph(points: np.array, connectivity: str, min_dist=None, constant=30, ad
     else:
         raise ValueError(
             'Please select a coordinate system that is supported (available types: : \'polar\', \'cartesian\' or \'local cartesian\')')
+    
     return g
 
 if __name__ == "__main__":

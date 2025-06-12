@@ -231,7 +231,9 @@ class LayoutGenerator:
 
 if __name__ == "__main__":
     # example usage to plot one layout with all the different shapes
-    config = Box.from_yaml(filename='/home/gregory/Documents/PhD/windfarm-gnn/graph_farms/config.yml', Loader=yaml.FullLoader)
+    import os
+    print(os.getcwd())
+    config = Box.from_yaml(filename='graph_farms/config.yml', Loader=yaml.FullLoader)
     layout_generator = LayoutGenerator(**config.turbine_settings)
     layout1 = layout_generator.generate_random_layout(n_points=100, farm_lw_ratio=2, min_dist=3*130)
     layout2 = layout_generator.generate_random_layout(n_points=30, farm_lw_ratio=0.5, min_dist=5*130)
